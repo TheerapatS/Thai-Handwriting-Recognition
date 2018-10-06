@@ -1,4 +1,5 @@
 import cv2
+
 import numpy as np
 import matplotlib.pyplot as plt
 # from skimage.feature import hog
@@ -141,5 +142,5 @@ def deskew(img):
     return img
 
 # def extract_sliding_window(img):  
-    
+
 main()

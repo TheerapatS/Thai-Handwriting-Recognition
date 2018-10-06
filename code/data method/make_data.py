@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+
 from operator import itemgetter
 
 def crop_img (img,x):
@@ -120,3 +121,4 @@ if __name__ == "__main__":
             # cv2.waitKey(0)
             find_alphabet(temp,path_out,set_count)
             set_count += 1
+
