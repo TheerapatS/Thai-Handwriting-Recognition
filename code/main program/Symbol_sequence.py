@@ -17,12 +17,15 @@ def main ():
     sliding_windows_size = [50,100]
     percent_step = 50
     orientations=16
-    pixels_per_cell=(10, 10)
-    cells_per_block=(3, 1)
+    pixels_per_cell=(20, 25)
+    cells_per_block=(2, 2)
 
 
     sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
-    find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block)
+    feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block)
+    for i in feature_vector:
+        print(i)
+
 
 def find_size_slide(img):
     mask = cv2.inRange(img,(0),(180))
@@ -49,10 +52,14 @@ def find_size_slide(img):
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
 
 def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block):
+    feature_vector = []
     for img in sliding_windows:
-        fd, hog_image = hog(img, orientations=16, pixels_per_cell=(, 256),
-                        cells_per_block=(1, 1), visualize=True, feature_vector=True)
-
+        fd, hog_image = hog(img, orientations, pixels_per_cell, cells_per_block, visualize=True, feature_vector=True)
+        feature_vector.append(fd)
+        cv2.imshow("img",img)
+        cv2.imshow("hog",hog_image)
+        cv2.waitKey()
+    return feature_vector
 
 def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step):
     sliding_windows = []
@@ -70,4 +77,5 @@ def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step):
         sliding_windows.append(crop_img)
         left += int(step)
     return sliding_windows
+
 main()
