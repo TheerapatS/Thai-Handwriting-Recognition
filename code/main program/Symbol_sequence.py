@@ -1,8 +1,9 @@
 import cv2
-
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.feature import hog
+from sklearn.cluster import KMeans
 
 # from skimage.feature import hog
 # from skimage import data, exposure
@@ -10,22 +11,46 @@ w = -1
 h = -1
 def main ():
     number_of_sliding_window = 50
-    path = "D:\Work\Project\\training_set\Symbol_Test\\"
-    file = "01.jpg"
-    img = cv2.cvtColor(cv2.imread(path+file),cv2.COLOR_BGR2GRAY)
-    bounding_box = find_size_slide(img)
+    path = "E:\Work\Symbol_Test\\"
+    path_out = "E:\Work\\Symbol_Test_out\\"
+    # file = "01.jpg"
+    
+    
     sliding_windows_size = [50,100]
     percent_step = 50
-    orientations=16
-    pixels_per_cell=(20, 25)
-    cells_per_block=(2, 2)
+    orientations = 16
+    pixels_per_cell = (20, 25)
+    cells_per_block = (1, 1)
+    number_clusters = 30
+    all_feature_vector = []
+    train_data = []
 
+    for i in range (1,21):
+        try:
+            os.stat(path_out + str(i))
+        except:
+            os.mkdir(path_out + str(i))
+    j = 1
+    for file in os.listdir(path):
+        # print (file)
+        img = cv2.cvtColor(cv2.imread(path+file),cv2.COLOR_BGR2GRAY)
+        bounding_box = find_size_slide(img)
+        sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
 
-    sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
-    feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block)
-    for i in feature_vector:
-        print(i)
+        path_save_file = path_out + str(j) + "\\"
+        for i in range(1,len(sliding_windows)+1):
+            cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
+        feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
+        # print (len(feature_vector))
 
+        all_feature_vector.append(feature_vector)
+        for i in feature_vector:
+            train_data.append(i)
+        j += 1
+    # for i in feature_vector:
+    #     print(i)
+    model = k_means(number_clusters,train_data)
+    predict_class(model,all_feature_vector)
 
 def find_size_slide(img):
     mask = cv2.inRange(img,(0),(180))
@@ -51,14 +76,20 @@ def find_size_slide(img):
     bottom.sort()
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
 
-def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block):
+def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out):
     feature_vector = []
+    path_save_file = path_out + str(j) + "\\"
+    i = 0
     for img in sliding_windows:
         fd, hog_image = hog(img, orientations, pixels_per_cell, cells_per_block, visualize=True, feature_vector=True)
         feature_vector.append(fd)
+        cv2.imwrite(path_save_file + str(i) + "_2.jpg", hog_image)
         cv2.imshow("img",img)
+        cv2.moveWindow("img", 50,100)
         cv2.imshow("hog",hog_image)
+        cv2.moveWindow("hog", 200,100)
         cv2.waitKey()
+        i+=1
     return feature_vector
 
 def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step):
@@ -77,5 +108,19 @@ def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step):
         sliding_windows.append(crop_img)
         left += int(step)
     return sliding_windows
+
+def k_means(number_clusters,data):
+    model = KMeans(n_clusters=number_clusters)
+    model.fit(np.array(data))
+    # all_predictions = model.predict(np.array(data))
+    # print(all_predictions)
+    return model
+
+def predict_class(model,all_feature_vactor):
+    for i in range(len(all_feature_vactor)):
+        # for j in range(len(all_feature_vactor[i])):
+            predicted_label = model.predict(all_feature_vactor[i])
+            print (predicted_label)
+        # print ()
 
 main()
