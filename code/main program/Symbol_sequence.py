@@ -79,17 +79,27 @@ def find_size_slide(img):
 def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out):
     feature_vector = []
     path_save_file = path_out + str(j) + "\\"
-    i = 0
+    i = 1
+    maxx = 0
     for img in sliding_windows:
         fd, hog_image = hog(img, orientations, pixels_per_cell, cells_per_block, visualize=True, feature_vector=True)
+        # print (type(hog_image))
         feature_vector.append(fd)
+        
+        # cv2.imshow("img",img)
+        # cv2.moveWindow("img", 50,100)
+        # cv2.imshow("hog",hog_image)
+        # cv2.moveWindow("hog", 200,100)
+        # cv2.waitKey()
+        # for p in hog_image:
+            # for q in p:
+                # q = int(q*255)
         cv2.imwrite(path_save_file + str(i) + "_2.jpg", hog_image)
-        cv2.imshow("img",img)
-        cv2.moveWindow("img", 50,100)
-        cv2.imshow("hog",hog_image)
-        cv2.moveWindow("hog", 200,100)
-        cv2.waitKey()
         i+=1
+        for p in hog_image:
+            for q in p:
+                maxx = max(q,maxx)
+    print (maxx)
     return feature_vector
 
 def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step):
