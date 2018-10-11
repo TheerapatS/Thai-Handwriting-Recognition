@@ -17,15 +17,15 @@ def main ():
     
     
     sliding_windows_size = [50,100]
-    percent_step = 50
-    orientations = 16
-    pixels_per_cell = (20, 25)
-    cells_per_block = (1, 1)
-    number_clusters = 30
+    percent_step = 70
+    orientations = 8
+    pixels_per_cell = (25, 25)
+    cells_per_block = (2, 2)
+    number_clusters = 25
     all_feature_vector = []
     train_data = []
 
-    for i in range (1,21):
+    for i in range (1,132):
         try:
             os.stat(path_out + str(i))
         except:
@@ -33,24 +33,28 @@ def main ():
     j = 1
     for file in os.listdir(path):
         # print (file)
+        print (file)
         img = cv2.cvtColor(cv2.imread(path+file),cv2.COLOR_BGR2GRAY)
         bounding_box = find_size_slide(img)
         sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
-
         path_save_file = path_out + str(j) + "\\"
         for i in range(1,len(sliding_windows)+1):
             cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
+        print ("made sliding window for " + file)
         feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
         # print (len(feature_vector))
-
+        print ("extracted feature for " + file)
         all_feature_vector.append(feature_vector)
         for i in feature_vector:
             train_data.append(i)
         j += 1
     # for i in feature_vector:
     #     print(i)
+    print ("ready for train model")
     model = k_means(number_clusters,train_data)
+    print ("trained model")
     predict_class(model,all_feature_vector)
+    print ("all done!!")
 
 def find_size_slide(img):
     mask = cv2.inRange(img,(0),(180))
