@@ -11,16 +11,16 @@ w = -1
 h = -1
 def main ():
     number_of_sliding_window = 50
-    path = "E:\Work\Symbol_Test\\"
-    path_out = "E:\Work\\Symbol_Test_out\\"
+    path = "D:\Work\Project\\training_set\Symbol_Test\\"
+    path_out = "D:\Work\Project\\training_set\Symbol_Test_Output\\"
     # file = "01.jpg"
     
     
     sliding_windows_size = [50,100]
-    percent_step = 50
-    orientations = 16
-    pixels_per_cell = (20, 25)
-    cells_per_block = (1, 1)
+    percent_step = 90
+    orientations = 12
+    pixels_per_cell = (25, 25)
+    cells_per_block = (2, 2)
     number_clusters = 30
     all_feature_vector = []
     train_data = []
@@ -96,10 +96,6 @@ def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path
                 # q = int(q*255)
         cv2.imwrite(path_save_file + str(i) + "_2.jpg", hog_image)
         i+=1
-        for p in hog_image:
-            for q in p:
-                maxx = max(q,maxx)
-    print (maxx)
     return feature_vector
 
 def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step):
