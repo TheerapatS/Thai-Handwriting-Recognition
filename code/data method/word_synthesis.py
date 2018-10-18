@@ -22,7 +22,7 @@ def main():
             print (ord(ascii_w))
             char_order.append(ord(ascii_w))
         word_synthesis(char_order,1)
-        break
+        # break
         print()
     
 def create_plain_img (n):
@@ -59,9 +59,34 @@ def check_type_character (num):
     else:
         return 0
 
-def extrack_char (path):
-    print (path)
+def extrack_char (path,char_type,c):
+    # print (path)
     img = cv2.cvtColor(cv2.imread(path),cv2.COLOR_BGR2GRAY)
+    if char_type == 1:
+        if c == 3620 or c == 3622:
+            img = cv2.resize(img, (45,40)) 
+        else:
+            img = cv2.resize(img, (40,40)) 
+    elif char_type == 2:
+        if 3650 <= c <= 3652:
+            img = cv2.resize(img, (55,40))
+        else :
+            img = cv2.resize(img, (40,40))
+    elif char_type == 3:
+        img = cv2.resize(img, (40,25))
+    elif char_type == 4:
+        if c == 3640:
+            img = cv2.resize(img, (20,13))
+        else:
+            img = cv2.resize(img, (20,20))
+    # elif char_type == 5:
+    elif char_type == 6:
+        if c == 3656:
+            img = cv2.resize(img, (5,15))
+        else :
+            img = cv2.resize(img, (25,15)) 
+    elif char_type == 7:
+        img = cv2.resize(img, (25,25))
     rotate_rand = randint(-5, 5)
     rotate_img = rotate(img, rotate_rand)
     mask = cv2.inRange(rotate_img,(0),(0))
@@ -106,24 +131,76 @@ def word_synthesis (char_order,n):
     x = 60
     y = 20
     position_order = []
-    shape_order = []
+    type_order = []
     img = create_plain_img(len(char_order))
     print (img.shape)
     for c in char_order:
-        position_order.append([x,y])
         path = data_path +  str(c) + "\\"
+        print (path)
         n_file = len(next(os.walk(path))[2])
         path_file = path + str(randint(1, n_file)) + ".bmp"
-        char_img = extrack_char(path_file)
         char_type = check_type_character(c)
-        shape_order.append([char_img.shape[0],char_img.shape[1]])
+        char_img = extrack_char(path_file,char_type,c)
+        type_order.append(char_type)
         if char_type == 1 or char_type == 2:
+            if 3650 <= c <= 3652:
+                x = x - 15
             for i in range(char_img.shape[0]):
                 for j in range(char_img.shape[1]):
                     img[x+i][y+j] = char_img[i][j]
+            position_order.append([x,y])
+            if 3650 <= c <= 3652:
+                x = x + 15
             y = y + char_img.shape[1]
-        cv2.imshow("img",img)
-        cv2.waitKey()
-        cv2.destroyAllWindows()
+        elif char_type == 3:
+            if c != 3633:
+                x_temp = 48
+                y_temp = position_order[len(position_order)-1][1]
+                for i in range(char_img.shape[0]):
+                    for j in range(char_img.shape[1]):
+                        img[x_temp+i][y_temp+j] = char_img[i][j]
+            else:
+                x_temp = 48
+                y_temp = position_order[len(position_order)-1][1] + 10
+                for i in range(char_img.shape[0]):
+                    for j in range(char_img.shape[1]):
+                        img[x_temp+i][y_temp+j] = char_img[i][j]
+            position_order.append([x_temp,y_temp])
+        elif char_type == 4:
+            x_temp = 85
+            y_temp = position_order[len(position_order)-1][1] + 10
+            for i in range(char_img.shape[0]):
+                    for j in range(char_img.shape[1]):
+                        img[x_temp+i][y_temp+j] = char_img[i][j]
+            position_order.append([x_temp,y_temp])
+        # elif char_type == 5:
+        elif char_type == 6:
+            if type_order[len(type_order)-1] == 3:
+                x_temp = 30
+                y_temp = position_order[len(position_order)-1][1] + 15
+                for i in range(char_img.shape[0]):
+                        for j in range(char_img.shape[1]):
+                            img[x_temp+i][y_temp+j] = char_img[i][j]
+                position_order.append([x_temp,y_temp])
+            else:
+                x_temp = 48
+                y_temp = position_order[len(position_order)-1][1] + 12
+                for i in range(char_img.shape[0]):
+                        for j in range(char_img.shape[1]):
+                            img[x_temp+i][y_temp+j] = char_img[i][j]
+                position_order.append([x_temp,y_temp])
+        elif char_type == 7:
+            x_temp = 42
+            y_temp = position_order[len(position_order)-1][1] + 5
+            for i in range(char_img.shape[0]):
+                    for j in range(char_img.shape[1]):
+                        img[x_temp+i][y_temp+j] = char_img[i][j]
+            position_order.append([x_temp,y_temp])
+    cv2.imshow("img",img)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
     # n = n -1
+
+def cut_and_save_img (img):
+    
 main ()
