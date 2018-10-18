@@ -9,19 +9,23 @@ from scipy.ndimage import rotate
 dictionary_path = "E:\Work\Thai-Handwriting-Recognition\code\dictionary.txt"
 data_path = "E:\Work\\68PersonsBmpChar\\"
 test_path = "E:\Work\Thai-Handwriting-Recognition\code\\test.txt"
+path_out = "E:\Work\Dictionary_word\\"
+
+
 def main():
-    
+    word_count = 0
     with open(dictionary_path, encoding="utf-8-sig") as file:
     # with open(test_path, encoding="utf-8-sig") as file:
         all_words = file.readlines()
     all_words = [x.strip() for x in all_words] 
     # print (all_words)
     for word in all_words:
+        word_count = word_count + 1
         char_order = []
         for ascii_w in word:
             print (ord(ascii_w))
             char_order.append(ord(ascii_w))
-        word_synthesis(char_order,1)
+        word_synthesis(char_order,2,word_count)
         # break
         print()
     
@@ -131,84 +135,95 @@ def find_bounding_box (img):
     bottom.sort()
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
 
-def word_synthesis (char_order,n):
-    # while n >= 0:
-    x = 60
-    y = 20
-    position_order = []
-    type_order = []
-    img = create_plain_img(len(char_order))
-    print (img.shape)
-    for c in char_order:
-        path = data_path +  str(c) + "\\"
-        print (path)
-        n_file = len(next(os.walk(path))[2])
-        path_file = path + str(randint(1, n_file)) + ".bmp"
-        char_type = check_type_character(c)
-        char_img = extrack_char(path_file,char_type,c)
-        type_order.append(char_type)
-        if char_type == 1 or char_type == 2:
-            if 3650 <= c <= 3652:
-                x = x - 15
-            for i in range(char_img.shape[0]):
-                for j in range(char_img.shape[1]):
-                    img[x+i][y+j] = char_img[i][j]
-            position_order.append([x,y])
-            if 3650 <= c <= 3652:
-                x = x + 15
-            y = y + char_img.shape[1]
-        elif char_type == 3:
-            if c != 3633:
-                x_temp = 48
-                y_temp = position_order[len(position_order)-1][1]
+def word_synthesis (char_order,n,word_count):
+    while n > 0:
+        x = 60
+        y = 20
+        position_order = []
+        type_order = []
+        img = create_plain_img(len(char_order))
+        print (img.shape)
+        for c in char_order:
+            path = data_path +  str(c) + "\\"
+            print (path)
+            n_file = len(next(os.walk(path))[2])
+            path_file = path + str(randint(1, n_file)) + ".bmp"
+            char_type = check_type_character(c)
+            char_img = extrack_char(path_file,char_type,c)
+            type_order.append(char_type)
+            if char_type == 1 or char_type == 2:
+                if 3650 <= c <= 3652:
+                    x = x - 15
                 for i in range(char_img.shape[0]):
                     for j in range(char_img.shape[1]):
-                        img[x_temp+i][y_temp+j] = char_img[i][j]
-            else:
-                x_temp = 48
-                y_temp = position_order[len(position_order)-1][1] + 10
-                for i in range(char_img.shape[0]):
-                    for j in range(char_img.shape[1]):
-                        img[x_temp+i][y_temp+j] = char_img[i][j]
-            position_order.append([x_temp,y_temp])
-        elif char_type == 4:
-            x_temp = 82
-            y_temp = position_order[len(position_order)-1][1] + 8
-            for i in range(char_img.shape[0]):
-                    for j in range(char_img.shape[1]):
-                        img[x_temp+i][y_temp+j] = char_img[i][j]
-            position_order.append([x_temp,y_temp])
-        # elif char_type == 5:
-        elif char_type == 6:
-            if type_order[len(type_order)-1] == 3:
-                x_temp = 30
-                y_temp = position_order[len(position_order)-1][1] + 15
+                        img[x+i][y+j] = char_img[i][j]
+                position_order.append([x,y])
+                if 3650 <= c <= 3652:
+                    x = x + 15
+                y = y + char_img.shape[1]
+            elif char_type == 3:
+                if c != 3633:
+                    x_temp = 48
+                    y_temp = position_order[len(position_order)-1][1]
+                    for i in range(char_img.shape[0]):
+                        for j in range(char_img.shape[1]):
+                            img[x_temp+i][y_temp+j] = char_img[i][j]
+                else:
+                    x_temp = 48
+                    y_temp = position_order[len(position_order)-1][1] + 10
+                    for i in range(char_img.shape[0]):
+                        for j in range(char_img.shape[1]):
+                            img[x_temp+i][y_temp+j] = char_img[i][j]
+                position_order.append([x_temp,y_temp])
+            elif char_type == 4:
+                x_temp = 82
+                y_temp = position_order[len(position_order)-1][1] + 8
                 for i in range(char_img.shape[0]):
                         for j in range(char_img.shape[1]):
                             img[x_temp+i][y_temp+j] = char_img[i][j]
                 position_order.append([x_temp,y_temp])
-            else:
-                x_temp = 48
-                y_temp = position_order[len(position_order)-1][1] + 12
+            # elif char_type == 5:
+            elif char_type == 6:
+                if type_order[len(type_order)-1] == 3:
+                    x_temp = 30
+                    y_temp = position_order[len(position_order)-1][1] + 15
+                    for i in range(char_img.shape[0]):
+                            for j in range(char_img.shape[1]):
+                                img[x_temp+i][y_temp+j] = char_img[i][j]
+                    position_order.append([x_temp,y_temp])
+                else:
+                    x_temp = 48
+                    y_temp = position_order[len(position_order)-1][1] + 12
+                    for i in range(char_img.shape[0]):
+                            for j in range(char_img.shape[1]):
+                                img[x_temp+i][y_temp+j] = char_img[i][j]
+                    position_order.append([x_temp,y_temp])
+            elif char_type == 7:
+                x_temp = 42
+                y_temp = position_order[len(position_order)-1][1] + 5
                 for i in range(char_img.shape[0]):
                         for j in range(char_img.shape[1]):
                             img[x_temp+i][y_temp+j] = char_img[i][j]
                 position_order.append([x_temp,y_temp])
-        elif char_type == 7:
-            x_temp = 42
-            y_temp = position_order[len(position_order)-1][1] + 5
-            for i in range(char_img.shape[0]):
-                    for j in range(char_img.shape[1]):
-                        img[x_temp+i][y_temp+j] = char_img[i][j]
-            position_order.append([x_temp,y_temp])
-    cut_and_save_img(img)
-    # n = n -1
+        cut_and_save_img(img,n,word_count)
+        n = n - 1
 
-def cut_and_save_img (img):
+def cut_and_save_img (img,n,word_count):
     bounding_box = find_bounding_box(img)
     crop_img = img[bounding_box[0]-3:bounding_box[1]+3, bounding_box[2]-3:bounding_box[3]+3]
-    cv2.imshow("img",crop_img)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
+    created_folder(path_out,word_count)
+    cv2.imwrite(path_out + str(word_count) + "\\" + str(n) + ".bmp", crop_img)
+    # cv2.imshow("img",crop_img)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
 
+def created_folder(path_out,word_count):
+    try:
+        os.stat(path_out)
+    except:
+        os.mkdir(path_out)
+    try:
+        os.stat(path_out + str(word_count) + "\\")
+    except:
+        os.mkdir(path_out + str(word_count) + "\\")
 main ()
