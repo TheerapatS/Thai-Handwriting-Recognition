@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import os
 from random import randint
+from scipy.ndimage import rotate
 
 dictionary_path = "E:\Work\Thai-Handwriting-Recognition\code\dictionary.txt"
 data_path = "E:\Work\\68PersonsBmpChar\\"
@@ -61,7 +62,14 @@ def check_type_character (num):
 def extrack_char (path):
     print (path)
     img = cv2.cvtColor(cv2.imread(path),cv2.COLOR_BGR2GRAY)
-    mask = cv2.inRange(img,(0),(160))
+    rotate_rand = randint(-5, 5)
+    rotate_img = rotate(img, rotate_rand)
+    mask = cv2.inRange(rotate_img,(0),(0))
+    for i in range(mask.shape[0]):
+        for j in range(mask.shape[1]):
+            if mask[i][j] == 255:
+                rotate_img[i][j] = mask[i][j]
+    mask = cv2.inRange(rotate_img,(0),(200))
     temp = mask.copy()
     contourmask , contours, hierarchy = cv2.findContours(temp,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     top = []
@@ -79,20 +87,43 @@ def extrack_char (path):
     right.sort()
     bottom.sort()
     bounding_box = [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
-    crop_img = img[bounding_box[0]:bounding_box[1], bounding_box[2]:bounding_box[3]]
-    # cv2.imshow("aaa",img)
+    if bounding_box[0]-1 >= 0:
+        bounding_box[0] = bounding_box[0]-1
+    if bounding_box[1]+1 < img.shape[0]:
+        bounding_box[1] = bounding_box[1]+1
+    if bounding_box[2]-1 >= 0:
+        bounding_box[2] = bounding_box[2]-1
+    if bounding_box[3]+1 < img.shape[1]:
+        bounding_box[3] = bounding_box[3]+1
+    crop_img = rotate_img[bounding_box[0]:bounding_box[1], bounding_box[2]:bounding_box[3]]
+    # cv2.imshow("aaa",crop_img)
     # cv2.waitKey()
+    # cv2.destroyAllWindows()
+    return crop_img
+
 def word_synthesis (char_order,n):
-    # for i in range(n):
-    x = 20
-    y = 80
+    # while n >= 0:
+    x = 60
+    y = 20
+    position_order = []
+    shape_order = []
     img = create_plain_img(len(char_order))
+    print (img.shape)
     for c in char_order:
+        position_order.append([x,y])
         path = data_path +  str(c) + "\\"
         n_file = len(next(os.walk(path))[2])
         path_file = path + str(randint(1, n_file)) + ".bmp"
-        extrack_char(path_file)
+        char_img = extrack_char(path_file)
         char_type = check_type_character(c)
-
-
+        shape_order.append([char_img.shape[0],char_img.shape[1]])
+        if char_type == 1 or char_type == 2:
+            for i in range(char_img.shape[0]):
+                for j in range(char_img.shape[1]):
+                    img[x+i][y+j] = char_img[i][j]
+            y = y + char_img.shape[1]
+        cv2.imshow("img",img)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+    # n = n -1
 main ()
