@@ -58,10 +58,7 @@ def check_type_character (num):
         return 7
     else:
         return 0
-
-def extrack_char (path,char_type,c):
-    # print (path)
-    img = cv2.cvtColor(cv2.imread(path),cv2.COLOR_BGR2GRAY)
+def resize_img (img,char_type,c):
     if char_type == 1:
         if c == 3620 or c == 3622:
             img = cv2.resize(img, (45,40)) 
@@ -87,14 +84,35 @@ def extrack_char (path,char_type,c):
             img = cv2.resize(img, (25,15)) 
     elif char_type == 7:
         img = cv2.resize(img, (25,25))
+    return img
+
+def extrack_char (path,char_type,c):
+    # print (path)
+    img = cv2.cvtColor(cv2.imread(path),cv2.COLOR_BGR2GRAY)
+    img = resize_img(img,char_type,c)
     rotate_rand = randint(-5, 5)
     rotate_img = rotate(img, rotate_rand)
-    mask = cv2.inRange(rotate_img,(0),(0))
+    bounding_box = find_bounding_box(rotate_img)
+    if bounding_box[0]-1 >= 0:
+        bounding_box[0] = bounding_box[0]-1
+    if bounding_box[1]+1 < img.shape[0]:
+        bounding_box[1] = bounding_box[1]+1
+    if bounding_box[2]-1 >= 0:
+        bounding_box[2] = bounding_box[2]-1
+    if bounding_box[3]+1 < img.shape[1]:
+        bounding_box[3] = bounding_box[3]+1
+    crop_img = rotate_img[bounding_box[0]:bounding_box[1], bounding_box[2]:bounding_box[3]]
+    # cv2.imshow("aaa",crop_img)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
+    return crop_img
+def find_bounding_box (img):
+    mask = cv2.inRange(img,(0),(0))
     for i in range(mask.shape[0]):
         for j in range(mask.shape[1]):
             if mask[i][j] == 255:
-                rotate_img[i][j] = mask[i][j]
-    mask = cv2.inRange(rotate_img,(0),(200))
+                img[i][j] = mask[i][j]
+    mask = cv2.inRange(img,(0),(200))
     temp = mask.copy()
     contourmask , contours, hierarchy = cv2.findContours(temp,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     top = []
@@ -111,20 +129,7 @@ def extrack_char (path,char_type,c):
     left.sort()
     right.sort()
     bottom.sort()
-    bounding_box = [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
-    if bounding_box[0]-1 >= 0:
-        bounding_box[0] = bounding_box[0]-1
-    if bounding_box[1]+1 < img.shape[0]:
-        bounding_box[1] = bounding_box[1]+1
-    if bounding_box[2]-1 >= 0:
-        bounding_box[2] = bounding_box[2]-1
-    if bounding_box[3]+1 < img.shape[1]:
-        bounding_box[3] = bounding_box[3]+1
-    crop_img = rotate_img[bounding_box[0]:bounding_box[1], bounding_box[2]:bounding_box[3]]
-    # cv2.imshow("aaa",crop_img)
-    # cv2.waitKey()
-    # cv2.destroyAllWindows()
-    return crop_img
+    return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
 
 def word_synthesis (char_order,n):
     # while n >= 0:
@@ -167,8 +172,8 @@ def word_synthesis (char_order,n):
                         img[x_temp+i][y_temp+j] = char_img[i][j]
             position_order.append([x_temp,y_temp])
         elif char_type == 4:
-            x_temp = 85
-            y_temp = position_order[len(position_order)-1][1] + 10
+            x_temp = 82
+            y_temp = position_order[len(position_order)-1][1] + 8
             for i in range(char_img.shape[0]):
                     for j in range(char_img.shape[1]):
                         img[x_temp+i][y_temp+j] = char_img[i][j]
@@ -196,11 +201,14 @@ def word_synthesis (char_order,n):
                     for j in range(char_img.shape[1]):
                         img[x_temp+i][y_temp+j] = char_img[i][j]
             position_order.append([x_temp,y_temp])
-    cv2.imshow("img",img)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
+    cut_and_save_img(img)
     # n = n -1
 
 def cut_and_save_img (img):
-    
+    bounding_box = find_bounding_box(img)
+    crop_img = img[bounding_box[0]-3:bounding_box[1]+3, bounding_box[2]-3:bounding_box[3]+3]
+    cv2.imshow("img",crop_img)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
 main ()
