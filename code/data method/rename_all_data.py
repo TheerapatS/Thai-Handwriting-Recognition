@@ -1,7 +1,7 @@
 import os
 
 
-path = "E:\Work\\68PersonsBmpChar\\"
+path = "D:\Work\Project\\training_set\\68PersonsBmpChar\\"
 
 
 for fo in os.listdir(path):
