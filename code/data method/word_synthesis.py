@@ -10,12 +10,16 @@ dictionary_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\dictionary.
 data_path = "D:\Work\Project\\training_set\\68PersonsBmpChar\\"
 test_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\\test.txt"
 path_out = "D:\Work\Project\Dictionary_word\\"
-number_of_word = 10
+range_color_char = 200
+number_of_word = 1
 rotate_rand_size = 5
+squeeze_flag = False
 squeeze_ratio = 0
+fade_flag = False
 fade_ratio = 0
 erode_dilate_flag = False
 kernel_size = 5
+margin_size = 10
 
 def main():
     word_count = 0
@@ -109,6 +113,10 @@ def extrack_char (path,char_type,c):
     img = resize_img(img,char_type,c)
     rotate_rand = randint(-1 * rotate_rand_size, rotate_rand_size)
     rotate_img = rotate(img, rotate_rand)
+    cv2.imshow("uimg",rotate_img)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
     if erode_dilate_flag :
         e_or_d = randint(0,1)
         k_size = randint(0,kernel_size)
@@ -117,6 +125,15 @@ def extrack_char (path,char_type,c):
             rotate_img = cv2.erode(rotate_img,kernel,iterations = 1)
         else :
             rotate_img = cv2.dilate(rotate_img,kernel,iterations = 1)
+    
+    if fade_flag:
+        fade_init = randint(0,fade_ratio) 
+        for i in range(rotate_img.shape[0]):
+            for j in range(rotate_img.shape[1]):
+                if rotate_img[i][j] < range_color_char:
+                    rotate_img[i][j] = rotate_img[i][j] + fade_init
+    
+    
     bounding_box = find_bounding_box(rotate_img)
     if bounding_box[0]-1 >= 0:
         bounding_box[0] = bounding_box[0]-1
@@ -135,7 +152,7 @@ def find_bounding_box (img):
         for j in range(mask.shape[1]):
             if mask[i][j] == 255:
                 img[i][j] = mask[i][j]
-    mask = cv2.inRange(img,(0),(200))
+    mask = cv2.inRange(img,(0),(range_color_char))
     temp = mask.copy()
     __, contours, __ = cv2.findContours(temp,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     top = []
