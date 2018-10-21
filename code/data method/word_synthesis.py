@@ -10,8 +10,12 @@ dictionary_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\dictionary.
 data_path = "D:\Work\Project\\training_set\\68PersonsBmpChar\\"
 test_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\\test.txt"
 path_out = "D:\Work\Project\Dictionary_word\\"
-number_of_word = 200
+number_of_word = 10
 rotate_rand_size = 5
+squeeze_ratio = 0
+fade_ratio = 0
+erode_dilate_flag = False
+kernel_size = 5
 
 def main():
     word_count = 0
@@ -105,6 +109,14 @@ def extrack_char (path,char_type,c):
     img = resize_img(img,char_type,c)
     rotate_rand = randint(-1 * rotate_rand_size, rotate_rand_size)
     rotate_img = rotate(img, rotate_rand)
+    if erode_dilate_flag :
+        e_or_d = randint(0,1)
+        k_size = randint(0,kernel_size)
+        kernel = np.ones((k_size,k_size),np.uint8)
+        if e_or_d == 0:
+            rotate_img = cv2.erode(rotate_img,kernel,iterations = 1)
+        else :
+            rotate_img = cv2.dilate(rotate_img,kernel,iterations = 1)
     bounding_box = find_bounding_box(rotate_img)
     if bounding_box[0]-1 >= 0:
         bounding_box[0] = bounding_box[0]-1
