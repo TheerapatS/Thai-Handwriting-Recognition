@@ -6,11 +6,11 @@ import os
 from random import randint
 from scipy.ndimage import rotate
 
-dictionary_path = "E:\Work\Thai-Handwriting-Recognition\code\dictionary.txt"
-data_path = "E:\Work\\68PersonsBmpChar\\"
-test_path = "E:\Work\Thai-Handwriting-Recognition\code\\test.txt"
-path_out = "E:\Work\Dictionary_word\\"
-number_of_word = 10
+dictionary_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\dictionary.txt"
+data_path = "D:\Work\Project\\training_set\\68PersonsBmpChar\\"
+test_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\\test.txt"
+path_out = "D:\Work\Project\Dictionary_word\\"
+number_of_word = 200
 rotate_rand_size = 5
 
 def main():
@@ -21,10 +21,12 @@ def main():
     all_words = [x.strip() for x in all_words] 
     for word in all_words:
         word_count = word_count + 1
+        print ("Word number :: " + str(word_count))
         char_order = []
         for ascii_w in word:
             char_order.append(ord(ascii_w))
         word_synthesis(char_order,number_of_word,word_count)
+        print ()
     
 def create_plain_img (n):
     img = np.zeros([150,50+(40*n)],dtype=np.uint8)
@@ -63,29 +65,39 @@ def check_type_character (num):
 def resize_img (img,char_type,c):
     if char_type == 1: # alphabet
         if c == 3620 or c == 3622: # tall alphabet
-            img = cv2.resize(img, (45,40)) 
+            r = randint(-2,2)
+            img = cv2.resize(img, (45 + r,40 + r)) 
         else:
-            img = cv2.resize(img, (40,40)) 
+            r = randint(-2,2)
+            img = cv2.resize(img, (40 + r,40 + r)) 
     elif char_type == 2: # normal vowel
         if 3650 <= c <= 3652: # tall vowel
-            img = cv2.resize(img, (55,40))
+            r = randint(-2,2)
+            img = cv2.resize(img, (55 + r,40 + r))
         else : # other
-            img = cv2.resize(img, (40,40))
+            r = randint(-2,2)
+            img = cv2.resize(img, (40 + r,40 + r))
     elif char_type == 3: # upper vowel
-        img = cv2.resize(img, (40,25))
+        r = randint(-2,2)
+        img = cv2.resize(img, (40 + r,25 + r))
     elif char_type == 4: # lower vowel
         if c == 3640: # u
-            img = cv2.resize(img, (20,13))
+            r = randint(-2,2)
+            img = cv2.resize(img, (20 + r,13 + r))
         else: # uu
-            img = cv2.resize(img, (20,20))
+            r = randint(-2,2)
+            img = cv2.resize(img, (20 + r,20 + r))
     # elif char_type == 5:
     elif char_type == 6: # tone mask
         if c == 3656: # eak
-            img = cv2.resize(img, (5,15))
+            r = randint(-2,2)
+            img = cv2.resize(img, (5 + r,15 + r))
         else : # other
-            img = cv2.resize(img, (25,15)) 
+            r = randint(-2,2)
+            img = cv2.resize(img, (25 + r,15 + r)) 
     elif char_type == 7: # orthography
-        img = cv2.resize(img, (25,25))
+        r = randint(-2,2)
+        img = cv2.resize(img, (25 + r,25 + r))
     return img
 
 def extrack_char (path,char_type,c):
@@ -131,6 +143,9 @@ def find_bounding_box (img):
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
 
 def word_synthesis (char_order,n,word_count):
+    now_percent = 0
+    print ("::" ,end = " ")
+    temp_n = n
     while n > 0:
         x = 60
         y = 20
@@ -201,7 +216,13 @@ def word_synthesis (char_order,n,word_count):
                                 img[x_temp+i][y_temp+j] = char_img[i][j]
                     position_order.append([x_temp,y_temp])
         cut_and_save_img(img,n,word_count)
+
+        percent = (((temp_n - n)/temp_n)*100)
+        while percent-now_percent >= 2:
+            now_percent = now_percent + 2
+            print("#",end = "")
         n = n - 1
+
 
 def cut_and_save_img (img,n,word_count):
     bounding_box = find_bounding_box(img)

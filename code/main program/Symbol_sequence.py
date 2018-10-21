@@ -10,7 +10,6 @@ from sklearn.cluster import KMeans
 w = -1
 h = -1
 def main ():
-    number_of_sliding_window = 50
     path = "D:\Work\Project\\training_set\Symbol_Test\\"
     path_out = "D:\Work\Project\\training_set\Symbol_Test_Output\\"
     # file = "01.jpg"
@@ -20,9 +19,9 @@ def main ():
     percent_step = 70
     orientations = 8
     pixels_per_cell = (25, 25)
-    cells_per_block = (2, 2)
-    number_clusters = 25
+    number_clusters = 30
     all_feature_vector = []
+    cells_per_block = (2, 2)
     train_data = []
 
     for i in range (1,132):
@@ -62,6 +61,8 @@ def find_size_slide(img):
     mask = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernel)
     kernel = np.ones((12,12), np.uint8)
     mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
+    kernel = np.ones((3,3), np.uint8)
+    mask = cv2.morphologyEx(mask,cv2.MORPH_DILATE,kernel)
     temp = mask.copy()
     contourmask , contours, hierarchy = cv2.findContours(temp,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     top = []
