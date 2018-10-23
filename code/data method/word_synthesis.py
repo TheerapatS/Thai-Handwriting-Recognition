@@ -10,17 +10,18 @@ dictionary_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\dictionary.
 data_path = "D:\Work\Project\\training_set\\68PersonsBmpChar\\"
 test_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\\test.txt"
 path_out = "D:\Work\Project\Dictionary_word\\"
-range_color_char = 200
-number_of_word = 1
+range_color_char = 235
+number_of_word = 7000
 rotate_rand_size = 5
-squeeze_flag = False
-squeeze_ratio = 0
-fade_flag = False
-fade_ratio = 0
-erode_dilate_flag = False
-kernel_size = 5
-margin_size = 10
-
+squeeze_flag = True
+squeeze_min_size = 0
+squeeze_max_size = 5
+fade_flag = True
+fade_ratio = 15
+erode_dilate_flag = True
+kernel_size = 3
+margin_min_size = -5
+margin_max_size = 5
 def main():
     word_count = 0
     with open(dictionary_path, encoding="utf-8-sig") as file:
@@ -37,7 +38,7 @@ def main():
         print ()
     
 def create_plain_img (n):
-    img = np.zeros([150,50+(40*n)],dtype=np.uint8)
+    img = np.zeros([150,50+(60*n)],dtype=np.uint8)
     for i in range(150):
         for j in range(0,len(img[i])):
             img[i][j] = 255
@@ -74,24 +75,44 @@ def resize_img (img,char_type,c):
     if char_type == 1: # alphabet
         if c == 3620 or c == 3622: # tall alphabet
             r = randint(-2,2)
-            img = cv2.resize(img, (45 + r,40 + r)) 
+            if squeeze_flag :
+                s = randint(squeeze_min_size,squeeze_max_size)
+            else:
+                s = 0
+            img = cv2.resize(img, (40 + r + s,45 + r)) 
         else:
             r = randint(-2,2)
-            img = cv2.resize(img, (40 + r,40 + r)) 
+            if squeeze_flag :
+                s = randint(squeeze_min_size,squeeze_max_size)
+            else:
+                s = 0
+            img = cv2.resize(img, (40 + r + s,40 + r)) 
     elif char_type == 2: # normal vowel
         if 3650 <= c <= 3652: # tall vowel
             r = randint(-2,2)
-            img = cv2.resize(img, (55 + r,40 + r))
+            if squeeze_flag :
+                s = randint(squeeze_min_size,squeeze_max_size)
+            else:
+                s = 0
+            img = cv2.resize(img, (40 + r + s,55 + r))
         else : # other
             r = randint(-2,2)
-            img = cv2.resize(img, (40 + r,40 + r))
+            if squeeze_flag :
+                s = randint(squeeze_min_size,squeeze_max_size)
+            else:
+                s = 0 
+            img = cv2.resize(img, (40 + r + s,40 + r))
     elif char_type == 3: # upper vowel
         r = randint(-2,2)
-        img = cv2.resize(img, (40 + r,25 + r))
+        if squeeze_flag :
+                s = randint(squeeze_min_size,squeeze_max_size)
+        else:
+                s = 0
+        img = cv2.resize(img, (40 + r + s,25 + r))
     elif char_type == 4: # lower vowel
         if c == 3640: # u
             r = randint(-2,2)
-            img = cv2.resize(img, (20 + r,13 + r))
+            img = cv2.resize(img, (20 + r + s,13 + r))
         else: # uu
             r = randint(-2,2)
             img = cv2.resize(img, (20 + r,20 + r))
@@ -105,35 +126,23 @@ def resize_img (img,char_type,c):
             img = cv2.resize(img, (25 + r,15 + r)) 
     elif char_type == 7: # orthography
         r = randint(-2,2)
-        img = cv2.resize(img, (25 + r,25 + r))
+        if squeeze_flag :
+                s = randint(squeeze_min_size,squeeze_max_size)
+        else:
+                s = 0
+        img = cv2.resize(img, (25 + r + s,25 + r))
     return img
 
 def extrack_char (path,char_type,c):
     img = cv2.cvtColor(cv2.imread(path),cv2.COLOR_BGR2GRAY)
-    img = resize_img(img,char_type,c)
+    bounding_box = find_bounding_box(img)
+    t_img = img[bounding_box[0]:bounding_box[1], bounding_box[2]:bounding_box[3]]
+    img = resize_img(t_img,char_type,c)
     rotate_rand = randint(-1 * rotate_rand_size, rotate_rand_size)
     rotate_img = rotate(img, rotate_rand)
-    cv2.imshow("uimg",rotate_img)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
-
-    if erode_dilate_flag :
-        e_or_d = randint(0,1)
-        k_size = randint(0,kernel_size)
-        kernel = np.ones((k_size,k_size),np.uint8)
-        if e_or_d == 0:
-            rotate_img = cv2.erode(rotate_img,kernel,iterations = 1)
-        else :
-            rotate_img = cv2.dilate(rotate_img,kernel,iterations = 1)
-    
-    if fade_flag:
-        fade_init = randint(0,fade_ratio) 
-        for i in range(rotate_img.shape[0]):
-            for j in range(rotate_img.shape[1]):
-                if rotate_img[i][j] < range_color_char:
-                    rotate_img[i][j] = rotate_img[i][j] + fade_init
-    
-    
+    # cv2.imshow("uimg",rotate_img)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
     bounding_box = find_bounding_box(rotate_img)
     if bounding_box[0]-1 >= 0:
         bounding_box[0] = bounding_box[0]-1
@@ -143,6 +152,21 @@ def extrack_char (path,char_type,c):
         bounding_box[2] = bounding_box[2]-1
     if bounding_box[3]+1 < img.shape[1]:
         bounding_box[3] = bounding_box[3]+1
+    
+    if erode_dilate_flag :
+        e_or_d = randint(0,1)
+        k_size = randint(0,kernel_size)
+        kernel = np.ones((k_size,k_size),np.uint8)
+        if e_or_d == 0:
+            rotate_img = cv2.erode(rotate_img,kernel,iterations = 1)
+        else :
+            rotate_img = cv2.dilate(rotate_img,kernel,iterations = 1)
+    if fade_flag:
+        fade_init = randint(0,fade_ratio) 
+        for i in range(rotate_img.shape[0]):
+            for j in range(rotate_img.shape[1]):
+                if rotate_img[i][j] < range_color_char:
+                    rotate_img[i][j] = rotate_img[i][j] + fade_init
     crop_img = rotate_img[bounding_box[0]:bounding_box[1], bounding_box[2]:bounding_box[3]]
     return crop_img
 
@@ -191,35 +215,35 @@ def word_synthesis (char_order,n,word_count):
                 char_img = extrack_char(path_file,char_type,c)
                 type_order.append(char_type)
                 if char_type == 1 or char_type == 2: # normal char and vowel
-                    if 3650 <= c <= 3652: # tall vowel
+                    if 3650 <= c <= 3652 or c == 3611 or c == 3615 or c == 3613 or c == 3628: # tall vowel & tall char
                         x = x - 15
                     for i in range(char_img.shape[0]):
                         for j in range(char_img.shape[1]):
-                            img[x+i][y+j] = char_img[i][j]
-                    position_order.append([x,y])
-                    if 3650 <= c <= 3652:
+                            img[x+i][y+j] = min(char_img[i][j],img[x+i][y+j])
+                    if 3650 <= c <= 3652 or c == 3611 or c == 3615 or c == 3613 or c == 3628: # tall vowel & tall char
                         x = x + 15
-                    y = y + char_img.shape[1]
+                    position_order.append([x,y])
+                    y = y + char_img.shape[1] + randint(margin_min_size,margin_max_size)
                 elif char_type == 3: # upper vowel
                     if c != 3633: # not mai hun a gad
                         x_temp = 48
                         y_temp = position_order[len(position_order)-1][1]
                         for i in range(char_img.shape[0]):
                             for j in range(char_img.shape[1]):
-                                img[x_temp+i][y_temp+j] = char_img[i][j]
+                                img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])
                     else: # upper vowel
                         x_temp = 48
                         y_temp = position_order[len(position_order)-1][1] + 10
                         for i in range(char_img.shape[0]):
                             for j in range(char_img.shape[1]):
-                                img[x_temp+i][y_temp+j] = char_img[i][j]
+                                img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])
                     position_order.append([x_temp,y_temp])
                 elif char_type == 4: # lower vowel
                     x_temp = 82
                     y_temp = position_order[len(position_order)-1][1] + 8
                     for i in range(char_img.shape[0]):
                             for j in range(char_img.shape[1]):
-                                img[x_temp+i][y_temp+j] = char_img[i][j]
+                                img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])
                     position_order.append([x_temp,y_temp])
                 # elif char_type == 5:
                 elif char_type == 6: # tone mask
@@ -228,21 +252,21 @@ def word_synthesis (char_order,n,word_count):
                         y_temp = position_order[len(position_order)-1][1] + 15
                         for i in range(char_img.shape[0]):
                                 for j in range(char_img.shape[1]):
-                                    img[x_temp+i][y_temp+j] = char_img[i][j]
+                                    img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])
                         position_order.append([x_temp,y_temp])
                     else: # before is lower vowel
                         x_temp = 48
                         y_temp = position_order[len(position_order)-1][1] + 12
                         for i in range(char_img.shape[0]):
                                 for j in range(char_img.shape[1]):
-                                    img[x_temp+i][y_temp+j] = char_img[i][j]
+                                    img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])
                         position_order.append([x_temp,y_temp])
                 elif char_type == 7: # orthography
                     x_temp = 42
                     y_temp = position_order[len(position_order)-1][1] + 5
                     for i in range(char_img.shape[0]):
                             for j in range(char_img.shape[1]):
-                                img[x_temp+i][y_temp+j] = char_img[i][j]
+                                img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])
                     position_order.append([x_temp,y_temp])
         cut_and_save_img(img,n,word_count)
 
