@@ -240,7 +240,7 @@ def word_synthesis (char_order,n,word_count):
                     position_order.append([x_temp,y_temp])
                 elif char_type == 4: # lower vowel
                     x_temp = 95
-                    y_temp = position_order[len(position_order)-1][1] + 8
+                    y_temp = position_order[len(position_order)-1][1] + 22
                     for i in range(char_img.shape[0]):
                             for j in range(char_img.shape[1]):
                                 img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])

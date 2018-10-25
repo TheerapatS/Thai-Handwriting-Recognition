@@ -13,7 +13,8 @@ h = -1
 range_color_char = 235
 def main ():
     path = "D:\Work\Project\Dictionary_word\\"
-    path_out = "D:\Work\Project\\training_set\Symbol_Test_Output\\"
+    path_out = "D:\Work\Project\\training_set\Dictionary_sliding\\"
+    path_out_test = "D:\Work\Project\\training_set\Symbol_Test_out\\"
     # file = "01.jpg"
     
     sliding_windows_size = [50,100]
@@ -37,14 +38,13 @@ def main ():
         sub_path = path + str(folder) + "\\"
         # sub_path = "D:\Work\Project\\training_set\Symbol_Test\\"
         for file in os.listdir(sub_path):
-            print (file)
+            print ("Extract sliding window " + str(folder) + "\\" + file)
             img = cv2.cvtColor(cv2.imread(sub_path+file),cv2.COLOR_BGR2GRAY)
             bounding_box = find_size_slide(img)
             sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
             path_save_file = path_out + str(j) + "\\"
-            # for i in range(1,len(sliding_windows)+1):
-            #     cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
-            # print ("made sliding window for " + file)
+            for i in range(1,len(sliding_windows)+1):
+                cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
             feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
             # print (len(feature_vector))
             # print ("extracted feature for " + file)
@@ -60,18 +60,22 @@ def main ():
     model = k_means(number_clusters,train_data)
     model = save_load_model(model,False)
 
-    save_class_data(model,train_all_feature_vector)
+    save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
+    for i in range (1,133):
+        try:
+            os.stat(path_out_test + str(i))
+        except:
+            os.mkdir(path_out_test + str(i))
     j = 1
     data_test_path = "D:\Work\Project\\training_set\Symbol_Test\\"
     for file in os.listdir(data_test_path):
-        print (file)
+        print ("Train Symbol_Test\\" + file)
         img = cv2.cvtColor(cv2.imread(data_test_path+file),cv2.COLOR_BGR2GRAY)
         bounding_box = find_size_slide(img)
         sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
-        path_save_file = path_out + str(j) + "\\"
+        path_save_file = path_out_test + str(j) + "\\"
         for i in range(1,len(sliding_windows)+1):
             cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
-        print ("made sliding window for " + file)
         feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
         # print (len(feature_vector))
         # print ("extracted feature for " + file)
@@ -82,6 +86,7 @@ def main ():
     
     print ("trained model")
     predict_class(model,test_all_feature_vector)
+    save_class_data(model,test_all_feature_vector,"Test_data_class_label.txt")
     print ("all done!!")
 
 def save_load_model(model,load_flag):
@@ -160,11 +165,10 @@ def predict_class(model,all_feature_vactor):
     for i in range(len(all_feature_vactor)):
         # for j in range(len(all_feature_vactor[i])):
             predicted_label = model.predict(all_feature_vactor[i])
-            print (predicted_label)
         # print ()
 
-def save_class_data(model,all_feature_vector):
-    f = open("predicted_label.txt", "w")
+def save_class_data(model,all_feature_vector,file):
+    f = open(file, "w")
     for i in range(len(all_feature_vector)):
         # for j in range(len(all_feature_vactor[i])):
             predicted_label = model.predict(all_feature_vector[i])
