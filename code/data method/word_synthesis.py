@@ -11,14 +11,14 @@ data_path = "D:\Work\Project\\training_set\\68PersonsBmpChar\\"
 test_path = "D:\Work\Project\Thai-Handwriting-Recognition\code\\test.txt"
 path_out = "D:\Work\Project\Dictionary_word\\"
 range_color_char = 235
-number_of_word = 7000
+number_of_word = 100
 rotate_rand_size = 5
 squeeze_flag = True
 squeeze_min_size = 0
 squeeze_max_size = 5
 fade_flag = True
 fade_ratio = 15
-erode_dilate_flag = True
+erode_dilate_flag = False
 kernel_size = 3
 margin_min_size = -5
 margin_max_size = 5
@@ -256,7 +256,7 @@ def word_synthesis (char_order,n,word_count):
                         position_order.append([x_temp,y_temp])
                     else: # before is lower vowel
                         x_temp = 48
-                        y_temp = position_order[len(position_order)-1][1] + 12
+                        y_temp = position_order[len(position_order)-1][1] + 25
                         for i in range(char_img.shape[0]):
                                 for j in range(char_img.shape[1]):
                                     img[x_temp+i][y_temp+j] = min(char_img[i][j],img[x_temp+i][y_temp+j])
