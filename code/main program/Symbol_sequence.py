@@ -28,6 +28,10 @@ def main ():
     train_data = []
     # img = cv2.cvtColor(cv2.imread("D:\Work\Project\Dictionary_word\\2\\1512.bmp"),cv2.COLOR_BGR2GRAY)
     # find_size_slide(img)
+    try:
+        os.stat(path_out)
+    except:
+        os.mkdir(path_out)
     for i in range (1,501):
         try:
             os.stat(path_out + str(i))
@@ -38,7 +42,7 @@ def main ():
         sub_path = path + str(folder) + "\\"
         # sub_path = "D:\Work\Project\\training_set\Symbol_Test\\"
         for file in os.listdir(sub_path):
-            print ("Extract sliding window " + str(folder) + "\\" + file)
+            print ("Extract feature of sliding window " + str(folder) + "\\" + file)
             img = cv2.cvtColor(cv2.imread(sub_path+file),cv2.COLOR_BGR2GRAY)
             bounding_box = find_size_slide(img)
             sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
@@ -61,6 +65,11 @@ def main ():
     model = save_load_model(model,False)
 
     save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
+
+    try:
+        os.stat(path_out_test)
+    except:
+        os.mkdir(path_out_test)
     for i in range (1,133):
         try:
             os.stat(path_out_test + str(i))
