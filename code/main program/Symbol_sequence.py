@@ -46,15 +46,15 @@ def main ():
             img = cv2.cvtColor(cv2.imread(sub_path+file),cv2.COLOR_BGR2GRAY)
             bounding_box = find_size_slide(img)
             sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
-            path_save_file = path_out + str(j) + "\\"
-            for i in range(1,len(sliding_windows)+1):
-                cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
-            feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
-            # print (len(feature_vector))
-            # print ("extracted feature for " + file)
-            train_all_feature_vector.append(feature_vector)
-            for i in feature_vector:
-                train_data.append(i)
+            # path_save_file = path_out + str(j) + "\\"
+            # for i in range(1,len(sliding_windows)+1):
+            #     cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
+            # feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
+            # # print (len(feature_vector))
+            # # print ("extracted feature for " + file)
+            # train_all_feature_vector.append(feature_vector)
+            # for i in feature_vector:
+            #     train_data.append(i)
             j += 1
     
     # for i in feature_vector:
@@ -63,9 +63,7 @@ def main ():
     print ("ready for train model")
     model = k_means(number_clusters,train_data)
     model = save_load_model(model,False)
-
     save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
-
     try:
         os.stat(path_out_test)
     except:
@@ -132,6 +130,14 @@ def find_size_slide(img):
     right.sort()
     bottom.sort()
     # print (top,left,bottom,right)
+    scale = []
+    for i in range (img.shape[0]):
+        s = 0
+        for j in range(img.shape[1]):
+            if img[i][j] < range_color_char:
+                s += 1
+        scale.append(s)
+    
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
 
 def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out):
