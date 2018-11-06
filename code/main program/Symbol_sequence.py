@@ -18,10 +18,10 @@ def main ():
     # file = "01.jpg"
     
     sliding_windows_size = [50,100]
-    percent_step = 50
+    percent_step = 80
     orientations = 8
     pixels_per_cell = (25, 25)
-    number_clusters = 50
+    number_clusters = 35
     train_all_feature_vector = []
     test_all_feature_vector = []
     cells_per_block = (2, 2)
@@ -44,17 +44,17 @@ def main ():
         for file in os.listdir(sub_path):
             print ("Extract feature of sliding window " + str(folder) + "\\" + file)
             img = cv2.cvtColor(cv2.imread(sub_path+file),cv2.COLOR_BGR2GRAY)
-            bounding_box = find_size_slide(img)
-            sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
-            # path_save_file = path_out + str(j) + "\\"
-            # for i in range(1,len(sliding_windows)+1):
-            #     cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
-            # feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
-            # # print (len(feature_vector))
-            # # print ("extracted feature for " + file)
-            # train_all_feature_vector.append(feature_vector)
-            # for i in feature_vector:
-            #     train_data.append(i)
+            bounding_box,width = find_size_slide(img)
+            sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width)
+            path_save_file = path_out + str(j) + "\\"
+            for i in range(1,len(sliding_windows)+1):
+                cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
+            feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
+            # print (len(feature_vector))
+            print ("extracted feature for " + file)
+            train_all_feature_vector.append(feature_vector)
+            for i in feature_vector:
+                train_data.append(i)
             j += 1
     
     # for i in feature_vector:
@@ -63,6 +63,7 @@ def main ():
     print ("ready for train model")
     model = k_means(number_clusters,train_data)
     model = save_load_model(model,False)
+    # model = save_load_model(0,True)
     save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
     try:
         os.stat(path_out_test)
@@ -78,8 +79,8 @@ def main ():
     for file in os.listdir(data_test_path):
         print ("Train Symbol_Test\\" + file)
         img = cv2.cvtColor(cv2.imread(data_test_path+file),cv2.COLOR_BGR2GRAY)
-        bounding_box = find_size_slide(img)
-        sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step)
+        bounding_box,width = find_size_slide(img)
+        sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width)
         path_save_file = path_out_test + str(j) + "\\"
         for i in range(1,len(sliding_windows)+1):
             cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
@@ -111,7 +112,7 @@ def find_size_slide(img):
     mask = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernel)
     kernel = np.ones((12,12), np.uint8)
     mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
-    kernel = np.ones((3,3), np.uint8)
+    kernel = np.ones((5,5), np.uint8)
     mask = cv2.morphologyEx(mask,cv2.MORPH_DILATE,kernel)
     temp = mask.copy()
     contourmask , contours, hierarchy = cv2.findContours(temp,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
@@ -137,8 +138,23 @@ def find_size_slide(img):
             if img[i][j] < range_color_char:
                 s += 1
         scale.append(s)
-    
-    return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
+    ratio = max(scale) * 0.4
+    j = len(scale)-1
+    check_1 = False
+    check_2 = False
+    for i in range(len(scale)):
+        if scale[i] > ratio and not check_1:
+            width_top = i
+            check_1 = True
+        if scale[j] > ratio and not check_2:
+            width_bottom = j
+            check_2 = True
+        if check_1 and check_2:
+            break
+        j -= 1
+    width = int(0.4*(width_bottom-width_top))
+    return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]],width
+    # return [0,0,0,0]
 
 def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out):
     feature_vector = []
@@ -152,15 +168,16 @@ def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path
         i+=1
     return feature_vector
 
-def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step):
+def extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width):
     sliding_windows = []
     top,bottom,left,right = bounding_box[0],bounding_box[1],bounding_box[2],bounding_box[3]
-    width = int(((bottom-top)/2))
+    # width = int(((bottom-top)/2))
     height = bottom - top
     step = int(width*(percent_step/100))
     while left < right:
         temp_img = img[top:bottom, left:left+width]
         if temp_img.shape != (height,width):
+            # print(width - temp_img.shape[1])
             temp_img = cv2.copyMakeBorder(temp_img,0,0,0,width - temp_img.shape[1],cv2.BORDER_CONSTANT,value=255)
         crop_img = cv2.resize(temp_img, (sliding_windows_size[0], sliding_windows_size[1]))
         # cv2.imshow("test",crop_img)
@@ -189,7 +206,7 @@ def save_class_data(model,all_feature_vector,file):
             predicted_label = model.predict(all_feature_vector[i])
             for j in predicted_label:
                 f.write(str(j) + " ")
-            f.write("\n")
+            f.write("[" + str(len(predicted_label)) + "]\n")
     f.close()
 
 main()
