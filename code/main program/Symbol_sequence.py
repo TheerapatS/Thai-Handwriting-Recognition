@@ -111,7 +111,7 @@ def find_size_slide(img):
     mask = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernel)
     kernel = np.ones((12,12), np.uint8)
     mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
-    kernel = np.ones((3,3), np.uint8)
+    kernel = np.ones((5,5), np.uint8)
     mask = cv2.morphologyEx(mask,cv2.MORPH_DILATE,kernel)
     temp = mask.copy()
     contourmask , contours, hierarchy = cv2.findContours(temp,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
@@ -195,7 +195,7 @@ def save_class_data(model,all_feature_vector,file):
             predicted_label = model.predict(all_feature_vector[i])
             for j in predicted_label:
                 f.write(str(j) + " ")
-            f.write("\n")
+            f.write("[" + str(len(predicted_label)) + "]\n")
     f.close()
 
 main()
