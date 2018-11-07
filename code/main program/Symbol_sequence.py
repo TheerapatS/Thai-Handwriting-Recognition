@@ -137,7 +137,13 @@ def find_size_slide(img):
             if img[i][j] < range_color_char:
                 s += 1
         scale.append(s)
-    
+    plt.xlabel("scale")
+    plt.plot(np.arange(len(scale)), scale, color="red")
+    plt.show()
+    plt.close()
+    for i in range(len(scale)):
+        if scale[i] < 125:
+            
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]]
 
 def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out):
