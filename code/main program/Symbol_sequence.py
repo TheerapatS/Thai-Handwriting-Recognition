@@ -154,7 +154,7 @@ def find_size_slide(img):
         j -= 1
     width = int(0.4*(width_bottom-width_top))
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]],width
-    # return [0,0,0,0]
+
 
 def find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out):
     feature_vector = []
