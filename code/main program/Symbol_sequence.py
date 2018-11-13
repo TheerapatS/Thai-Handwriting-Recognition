@@ -21,7 +21,7 @@ def main ():
     percent_step = 80
     orientations = 8
     pixels_per_cell = (25, 25)
-    number_clusters = 35
+    number_clusters = 50
     train_all_feature_vector = []
     test_all_feature_vector = []
     cells_per_block = (2, 2)
@@ -38,6 +38,7 @@ def main ():
         except:
             os.mkdir(path_out + str(i))
     j = 1
+    print (ord('\n'))
     for folder in os.listdir(path):
         sub_path = path + str(folder) + "\\"
         # sub_path = "D:\Work\Project\\training_set\Symbol_Test\\"
@@ -47,8 +48,8 @@ def main ():
             bounding_box,width = find_size_slide(img)
             sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width)
             path_save_file = path_out + str(j) + "\\"
-            for i in range(1,len(sliding_windows)+1):
-                cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
+            # for i in range(1,len(sliding_windows)+1):
+            #     cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
             feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
             # print (len(feature_vector))
             print ("extracted feature for " + file)
@@ -64,7 +65,8 @@ def main ():
     model = k_means(number_clusters,train_data)
     model = save_load_model(model,False)
     # model = save_load_model(0,True)
-    save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
+    dict_symspell = save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
+    save_dictionary_symspell("Dictionary_symspell.txt",dict_symspell)
     try:
         os.stat(path_out_test)
     except:
@@ -82,8 +84,8 @@ def main ():
         bounding_box,width = find_size_slide(img)
         sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width)
         path_save_file = path_out_test + str(j) + "\\"
-        for i in range(1,len(sliding_windows)+1):
-            cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
+        # for i in range(1,len(sliding_windows)+1):
+        #     cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
         feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
         # print (len(feature_vector))
         # print ("extracted feature for " + file)
@@ -94,7 +96,8 @@ def main ():
     
     print ("trained model")
     predict_class(model,test_all_feature_vector)
-    save_class_data(model,test_all_feature_vector,"Test_data_class_label.txt")
+    __ = save_class_data(model,test_all_feature_vector,"Test_data_class_label.txt")
+    # save_dictionary_symspell("dictionary_symspell.txt",dict_symspell)
     print ("all done!!")
 
 def save_load_model(model,load_flag):
@@ -152,7 +155,7 @@ def find_size_slide(img):
         if check_1 and check_2:
             break
         j -= 1
-    width = int(0.4*(width_bottom-width_top))
+    width = int(1.6*(width_bottom-width_top))
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]],width
 
 
@@ -201,12 +204,26 @@ def predict_class(model,all_feature_vactor):
 
 def save_class_data(model,all_feature_vector,file):
     f = open(file, "w")
+    dict_symspell = {}
     for i in range(len(all_feature_vector)):
         # for j in range(len(all_feature_vactor[i])):
             predicted_label = model.predict(all_feature_vector[i])
+            s = ''
             for j in predicted_label:
                 f.write(str(j) + " ")
+                s += chr(j+33)
+            if s in dict_symspell:
+                dict_symspell[s] += 1
+            else :
+                dict_symspell[s] = 1
             f.write("[" + str(len(predicted_label)) + "]\n")
+    f.close()
+    return dict_symspell
+
+def save_dictionary_symspell(file,dict_symspell):
+    f = open(file,"w")
+    for i in dict_symspell:
+        f.write(i + " 10000\n")
     f.close()
 
 main()
