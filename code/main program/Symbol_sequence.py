@@ -18,10 +18,10 @@ def main ():
     # file = "01.jpg"
     
     sliding_windows_size = [50,100]
-    percent_step = 80
+    percent_step = 50
     orientations = 8
     pixels_per_cell = (25, 25)
-    number_clusters = 50
+    number_clusters = 30
     train_all_feature_vector = []
     test_all_feature_vector = []
     cells_per_block = (2, 2)
@@ -57,7 +57,6 @@ def main ():
             for i in feature_vector:
                 train_data.append(i)
             j += 1
-    
     # for i in feature_vector:
     #     print(i)
 
@@ -66,6 +65,7 @@ def main ():
     model = save_load_model(model,False)
     # model = save_load_model(0,True)
     dict_symspell = save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
+    cluster_histo(number_clusters,train_all_feature_vector,model)
     save_dictionary_symspell("Dictionary_symspell.txt",dict_symspell)
     try:
         os.stat(path_out_test)
@@ -219,6 +219,16 @@ def save_class_data(model,all_feature_vector,file):
             f.write("[" + str(len(predicted_label)) + "]\n")
     f.close()
     return dict_symspell
+
+def cluster_histo(number_clusters,all_feature_vector,model):
+    histo = np.zeros(number_clusters)
+    for i in range(len(all_feature_vector)):
+        predicted_label = model.predict(all_feature_vector[i])
+        for j in predicted_label:
+            histo[j] += 1
+    plt.plot(np.arange(number_clusters),histo, color="green")
+    plt.show()
+    # plt.close()
 
 def save_dictionary_symspell(file,dict_symspell):
     f = open(file,"w")
