@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from skimage.feature import hog
 from sklearn.cluster import KMeans
 from sklearn.externals import joblib
+import codecs
+from symspellpy.symspellpy import SymSpell, Verbosity 
 
 # from skimage.feature import hog
 # from skimage import data, exposure
@@ -15,8 +17,19 @@ def main ():
     path = "D:\Work\Project\Dictionary_word\\"
     path_out = "D:\Work\Project\\training_set\Dictionary_sliding\\"
     path_out_test = "D:\Work\Project\\training_set\Symbol_Test_out\\"
+    path_dict = "D:\Work\Project\Thai-Handwriting-Recognition\code\dictionary.txt"
+    path_predict_word = "D:\Work\Project\Thai-Handwriting-Recognition\code\predict_word.txt"
     # file = "01.jpg"
-    
+    # f_predict = codecs.open(path_predict_word,"w","utf-8")
+    f_dict = codecs.open(path_dict, encoding='utf-8')
+    dictionary_size = 0
+    dictionary_words = []
+    for line in f_dict :
+        # print (line.encode('utf-8'))
+        dictionary_size += 1
+        dictionary_words.append(line)
+
+    print (dictionary_size)
     sliding_windows_size = [50,100]
     percent_step = 50
     orientations = 8
@@ -38,7 +51,7 @@ def main ():
         except:
             os.mkdir(path_out + str(i))
     j = 1
-    print (ord('\n'))
+    # print (ord('\n'))
     for folder in os.listdir(path):
         sub_path = path + str(folder) + "\\"
         # sub_path = "D:\Work\Project\\training_set\Symbol_Test\\"
@@ -64,7 +77,7 @@ def main ():
     model = k_means(number_clusters,train_data)
     model = save_load_model(model,False)
     # model = save_load_model(0,True)
-    dict_symspell = save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt")
+    dict_symspell,symbol_to_word_ref = save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt",dictionary_size)
     cluster_histo(number_clusters,train_all_feature_vector,model)
     save_dictionary_symspell("Dictionary_symspell.txt",dict_symspell)
     try:
@@ -76,10 +89,23 @@ def main ():
             os.stat(path_out_test + str(i))
         except:
             os.mkdir(path_out_test + str(i))
+
+    initial_capacity = len(dict_symspell)
+    max_edit_distance_dictionary = 6
+    prefix_length = 7
+    sym_spell = SymSpell(initial_capacity, max_edit_distance_dictionary,prefix_length)
+    dictionary_symspell_path = os.path.join(os.path.dirname(__file__),"Dictionary_symspell.txt")
+    term_index = 0
+    count_index = 1
+    if not sym_spell.load_dictionary(dictionary_symspell_path, term_index, count_index):
+        print("Dictionary file not found")
+
     j = 1
+    name_of_file = []
     data_test_path = "D:\Work\Project\\training_set\Symbol_Test\\"
     for file in os.listdir(data_test_path):
         print ("Train Symbol_Test\\" + file)
+        name_of_file.append(file)
         img = cv2.cvtColor(cv2.imread(data_test_path+file),cv2.COLOR_BGR2GRAY)
         bounding_box,width = find_size_slide(img)
         sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width)
@@ -95,8 +121,8 @@ def main ():
         j += 1
     
     print ("trained model")
-    predict_class(model,test_all_feature_vector)
-    __ = save_class_data(model,test_all_feature_vector,"Test_data_class_label.txt")
+    predict_class(model,test_all_feature_vector,symbol_to_word_ref,sym_spell,dictionary_words,path_predict_word,name_of_file)
+    __,__ = save_class_data(model,test_all_feature_vector,"Test_data_class_label.txt",dictionary_size)
     # save_dictionary_symspell("dictionary_symspell.txt",dict_symspell)
     print ("all done!!")
 
@@ -196,29 +222,64 @@ def k_means(number_clusters,data):
     # print(all_predictions)
     return model
 
-def predict_class(model,all_feature_vactor):
+def predict_class(model,all_feature_vactor,symbol_to_word_ref,sym_spell,dictionary_words,path_predict_word,name_of_file):
+    max_edit_distance_lookup = 5
+    ans_words = []
     for i in range(len(all_feature_vactor)):
-        # for j in range(len(all_feature_vactor[i])):
-            predicted_label = model.predict(all_feature_vactor[i])
-        # print ()
+        predicted_label = model.predict(all_feature_vactor[i])
+        s = ''
+        predict_word = {}
+        for j in predicted_label:
+             s += chr(j+33)
+        suggestion_verbosity = Verbosity.CLOSEST
+        suggestions = sym_spell.lookup(s,suggestion_verbosity,max_edit_distance_lookup)
+        # print ("real " + s)
+        for suggestion in suggestions:
+            if symbol_to_word_ref[suggestion.term] not in predict_word:
+                predict_word[symbol_to_word_ref[suggestion.term]] = symbol_to_word_ref[suggestion.term]
+        print(predict_word)
+        if len(predict_word) == 1:
+            for key in predict_word:
+                # print (predict_word[key])
+                # print (type(predict_word[key]))
+                ans_words.append(name_of_file[i] + " " + dictionary_words[predict_word[key]-1])
+        elif len(predict_word) != 0:
+            co = 1
+            for key in predict_word:
+                ans_words.append(str(co) + " " + name_of_file[i] + " " + dictionary_words[predict_word[key]-1])
+                co += 1
+        else:
+            ans_words.append(name_of_file[i] + " " + "None \r\n")
+        
+    # print (ans_words)
+    with codecs.open(path_predict_word, "w", "utf-8-sig") as f_predict:
+        for i in ans_words:
+            f_predict.write(u"{}".format(i))
+        # print (predict_word)
+        
 
-def save_class_data(model,all_feature_vector,file):
+def save_class_data(model,all_feature_vector,file,dictionary_size):
     f = open(file, "w")
+    symbol_to_word_ref = {}
     dict_symspell = {}
+    count = 0
     for i in range(len(all_feature_vector)):
-        # for j in range(len(all_feature_vactor[i])):
-            predicted_label = model.predict(all_feature_vector[i])
-            s = ''
-            for j in predicted_label:
-                f.write(str(j) + " ")
-                s += chr(j+33)
-            if s in dict_symspell:
-                dict_symspell[s] += 1
-            else :
-                dict_symspell[s] = 1
-            f.write("[" + str(len(predicted_label)) + "]\n")
+        predicted_label = model.predict(all_feature_vector[i])
+        s = ''
+        for j in predicted_label:
+            f.write(str(j) + " ")
+            s += chr(j+33)
+        if s in dict_symspell:
+            dict_symspell[s] += 1
+        else :
+            dict_symspell[s] = 1
+            symbol_to_word_ref[s] = int(count/(len(all_feature_vector)/dictionary_size))+1
+            # print ([s,int(count/(len(all_feature_vector)/dictionary_size))+1])
+        f.write("[" + str(len(predicted_label)) + "]\n")
+        count += 1
+            
     f.close()
-    return dict_symspell
+    return dict_symspell,symbol_to_word_ref
 
 def cluster_histo(number_clusters,all_feature_vector,model):
     histo = np.zeros(number_clusters)
@@ -227,7 +288,7 @@ def cluster_histo(number_clusters,all_feature_vector,model):
         for j in predicted_label:
             histo[j] += 1
     plt.plot(np.arange(number_clusters),histo, color="green")
-    plt.show()
+    # plt.show()
     # plt.close()
 
 def save_dictionary_symspell(file,dict_symspell):
