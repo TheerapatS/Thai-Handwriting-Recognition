@@ -181,7 +181,7 @@ def find_size_slide(img):
         if check_1 and check_2:
             break
         j -= 1
-    width = int(1.6*(width_bottom-width_top))
+    width = int(1*(width_bottom-width_top))
     return [top[0],bottom[len(bottom)-1],left[0],right[len(right)-1]],width
 
 

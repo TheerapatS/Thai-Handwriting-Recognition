@@ -1,100 +1,90 @@
 ﻿001.jpg ผัด
-002.jpg ﻿กระเพรา
+002.jpg None 
 003.jpg หมู
-004.jpg ผัด
-1 005.jpg กรอบ
-2 005.jpg ข้าว
-3 005.jpg ผัด
+1 004.jpg ผัด
+2 004.jpg หมู
+005.jpg None 
 006.jpg หมู
 007.jpg ผัด
 008.jpg None 
 009.jpg หมู
 010.jpg ผัด
 011.jpg None 
-012.jpg หมู
+1 012.jpg ผัด
+2 012.jpg หมู
 013.jpg ผัด
-014.jpg กรอบ
+014.jpg None 
 015.jpg หมู
 016.jpg ผัด
-017.jpg กรอบ
+017.jpg None 
 018.jpg หมู
 019.jpg ผัด
 020.jpg None 
 021.jpg หมู
-022.jpg ผัด
-1 023.jpg กรอบ
-2 023.jpg ข้าว
-3 023.jpg ผัด
-4 023.jpg หมู
+1 022.jpg ผัด
+2 022.jpg หมู
+023.jpg None 
 024.jpg หมู
 025.jpg ผัด
-026.jpg กรอบ
+026.jpg None 
 027.jpg หมู
 028.jpg ผัด
-1 029.jpg กรอบ
-2 029.jpg ผัด
+029.jpg None 
 030.jpg หมู
 031.jpg ผัด
-032.jpg กรอบ
-033.jpg หมู
+032.jpg None 
+1 033.jpg ผัด
+2 033.jpg หมู
 034.jpg ผัด
-035.jpg กรอบ
+035.jpg None 
 036.jpg หมู
 037.jpg ผัด
 038.jpg None 
-039.jpg หมู
-040.jpg หมู
+1 039.jpg ผัด
+2 039.jpg หมู
+1 040.jpg ผัด
+2 040.jpg หมู
 041.jpg None 
 042.jpg หมู
 043.jpg ผัด
-1 044.jpg กรอบ
-2 044.jpg ข้าว
+044.jpg None 
 045.jpg หมู
 046.jpg ผัด
-1 047.jpg กรอบ
-2 047.jpg ข้าว
-3 047.jpg ผัด
-4 047.jpg หมู
-1 048.jpg ข้าว
-2 048.jpg ผัด
-3 048.jpg หมู
-049.jpg ผัด
+047.jpg หมู
+048.jpg ผัด
+1 049.jpg ผัด
+2 049.jpg หมู
 050.jpg ผัด
-051.jpg ผัด
-1 052.jpg ผัด
-2 052.jpg หมู
-053.jpg ผัด
+051.jpg หมู
+052.jpg ผัด
+053.jpg None 
 054.jpg ผัด
-1 055.jpg กรอบ
-2 055.jpg หมู
-1 056.jpg ผัด
-2 056.jpg หมู
-1 057.jpg กรอบ
-2 057.jpg ข้าว
-3 057.jpg ผัด
-4 057.jpg หมู
+055.jpg None 
+056.jpg ผัด
+057.jpg กรอบ
 058.jpg ผัด
 059.jpg กรอบ
 060.jpg หมู
 061.jpg ผัด
-1 062.jpg ข้าว
-2 062.jpg ผัด
-3 062.jpg หมู
-1 063.jpg กรอบ
-2 063.jpg ข้าว
-3 063.jpg ผัด
-4 063.jpg หมู
+1 062.jpg ผัด
+2 062.jpg หมู
+063.jpg None 
 064.jpg ผัด
-065.jpg กรอบ
+1 065.jpg กรอบ
+2 065.jpg หมู
 066.jpg ผัด
-067.jpg ผัด
+1 067.jpg กรอบ
+2 067.jpg ข้าว
+3 067.jpg ผัด
 068.jpg ผัด
-069.jpg กรอบ
+069.jpg None 
 070.jpg ผัด
-1 071.jpg ข้าว
-2 071.jpg ผัด
+1 071.jpg กรอบ
+2 071.jpg ข้าว
 072.jpg ผัด
-1 073.jpg ผัด
-2 073.jpg หมู
-074.jpg ผัด
-075.jpg ผัด
+073.jpg ผัด
+1 074.jpg ข้าว
+2 074.jpg ผัด
+3 074.jpg หมู
+1 075.jpg กรอบ
+2 075.jpg ผัด
