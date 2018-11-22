@@ -34,7 +34,7 @@ def main ():
     percent_step = 50
     orientations = 8
     pixels_per_cell = (25, 25)
-    number_clusters = 50
+    number_clusters = 20
     train_all_feature_vector = []
     test_all_feature_vector = []
     cells_per_block = (2, 2)
@@ -88,6 +88,7 @@ def main ():
     dict_symspell,symbol_to_word_ref = save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt",dictionary_size)
     # cluster_histo_each_word(number_clusters,other_words,model,True)
     # cluster_histo(number_clusters,train_all_feature_vector,model,True)
+    cal_edit_dist(other_words,model,number_clusters)
     save_dictionary_symspell("Dictionary_symspell.txt",dict_symspell)
     try:
         os.stat(path_out_test)
@@ -128,7 +129,7 @@ def main ():
         # for i in feature_vector:
         #     train_data.append(i)
         j += 1
-    cluster_histo_each_word(number_clusters,[test_all_feature_vector],model,False)
+    # cluster_histo_each_word(number_clusters,[test_all_feature_vector],model,False)
     # cluster_histo(number_clusters,test_all_feature_vector,model,False)
     print ("trained model")
     predict_class(model,test_all_feature_vector,symbol_to_word_ref,sym_spell,dictionary_words,path_predict_word,name_of_file)
@@ -328,5 +329,45 @@ def save_dictionary_symspell(file,dict_symspell):
     for i in dict_symspell:
         f.write(i + " 10000\n")
     f.close()
+
+def editDistance(str1, str2, m , n): 
+    dp = [[0 for x in range(n+1)] for x in range(m+1)] 
+    for i in range(m+1): 
+        for j in range(n+1): 
+            if i == 0: 
+                dp[i][j] = j    # Min. operations = j 
+            elif j == 0: 
+                dp[i][j] = i    # Min. operations = i 
+            elif str1[i-1] == str2[j-1]: 
+                dp[i][j] = dp[i-1][j-1] 
+            else: 
+                dp[i][j] = 1 + min(dp[i][j-1],        # Insert 
+                                   dp[i-1][j],        # Remove 
+                                   dp[i-1][j-1])    # Replace 
+    return dp[m][n] 
+
+def cal_edit_dist(other_words,model,number_clusters):
+    f = open('edit_dist_train_' + str(number_clusters) +'.txt','w')
+    w = 1
+    for i in other_words:
+        edit_dist_avg = 0
+        count = 0
+        for j in range(len(i)):
+            predict_1 = model.predict(i[j])
+            s1 = ''
+            for p in predict_1:
+                s1 += chr(p+33)
+            for k in range(j+1,len(i)):
+                predict_2 = model.predict(i[k])
+                s2 = ''
+                for p in predict_2:
+                    s2 += chr(p+33)
+                # print (s1,s2)
+                edit_dist_avg +=  editDistance(s1,s2,len(s1),len(s2))
+                # print (edit_dist_avg)
+                count += 1
+        edit_dist_avg = edit_dist_avg/count
+        f.write(str(w) + ' : ' + str(edit_dist_avg) + '\n')
+        w += 1
 
 main()
