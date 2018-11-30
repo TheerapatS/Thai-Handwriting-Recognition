@@ -34,7 +34,7 @@ def main ():
     percent_step = 50
     orientations = 8
     pixels_per_cell = (25, 25)
-    number_clusters = 20
+    number_clusters = 50
     train_all_feature_vector = []
     test_all_feature_vector = []
     cells_per_block = (2, 2)
@@ -52,28 +52,28 @@ def main ():
             os.mkdir(path_out + str(i))
     j = 1
     # print (ord('\n'))
-    other_words = []
-    for folder in os.listdir(path):
-        sub_path = path + str(folder) + "\\"
-        # sub_path = "D:\Work\Project\\training_set\Symbol_Test\\"
-        t = []
-        for file in os.listdir(sub_path):
-            print ("Extract feature of sliding window " + str(folder) + "\\" + file)
-            img = cv2.cvtColor(cv2.imread(sub_path+file),cv2.COLOR_BGR2GRAY)
-            bounding_box,width = find_size_slide(img)
-            sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width)
-            path_save_file = path_out + str(j) + "\\"
-            # for i in range(1,len(sliding_windows)+1):
-            #     cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
-            feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
-            # print (len(feature_vector))
-            print ("extracted feature for " + file)
-            train_all_feature_vector.append(feature_vector)
-            t.append(feature_vector)
-            for i in feature_vector:
-                train_data.append(i)
-            j += 1
-        other_words.append(t)
+    # other_words = []
+    # for folder in os.listdir(path):
+    #     sub_path = path + str(folder) + "\\"
+    #     # sub_path = "D:\Work\Project\\training_set\Symbol_Test\\"
+    #     t = []
+    #     for file in os.listdir(sub_path):
+    #         print ("Extract feature of sliding window " + str(folder) + "\\" + file)
+    #         img = cv2.cvtColor(cv2.imread(sub_path+file),cv2.COLOR_BGR2GRAY)
+    #         bounding_box,width = find_size_slide(img)
+    #         sliding_windows = extract_sliding_window(img,bounding_box,sliding_windows_size,percent_step,width)
+    #         path_save_file = path_out + str(j) + "\\"
+    #         # for i in range(1,len(sliding_windows)+1):
+    #         #     cv2.imwrite(path_save_file + str(i) + "_1.jpg", sliding_windows[i-1])
+    #         feature_vector = find_hog(sliding_windows,orientations,pixels_per_cell,cells_per_block,j,path_out)
+    #         # print (len(feature_vector))
+    #         print ("extracted feature for " + file)
+    #         train_all_feature_vector.append(feature_vector)
+    #         t.append(feature_vector)
+    #         for i in feature_vector:
+    #             train_data.append(i)
+    #         j += 1
+    #     other_words.append(t)
     # for i in feature_vector:
     #     print(i)
     print ("ready for train model")
@@ -85,11 +85,11 @@ def main ():
     ##### load use this #####
     model = save_load_model(0,True,number_clusters)
 
-    dict_symspell,symbol_to_word_ref = save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt",dictionary_size)
+    # dict_symspell,symbol_to_word_ref = save_class_data(model,train_all_feature_vector,"Dictionary_word_class_label.txt",dictionary_size)
     # cluster_histo_each_word(number_clusters,other_words,model,True)
     # cluster_histo(number_clusters,train_all_feature_vector,model,True)
-    cal_edit_dist(other_words,model,number_clusters)
-    save_dictionary_symspell("Dictionary_symspell.txt",dict_symspell)
+    # cal_edit_dist(other_words,model,number_clusters)
+    # save_dictionary_symspell("Dictionary_symspell.txt",dict_symspell)
     try:
         os.stat(path_out_test)
     except:
@@ -100,15 +100,15 @@ def main ():
         except:
             os.mkdir(path_out_test + str(i))
 
-    initial_capacity = len(dict_symspell)
-    max_edit_distance_dictionary = 6
-    prefix_length = 7
-    sym_spell = SymSpell(initial_capacity, max_edit_distance_dictionary,prefix_length)
-    dictionary_symspell_path = os.path.join(os.path.dirname(__file__),"Dictionary_symspell.txt")
-    term_index = 0
-    count_index = 1
-    if not sym_spell.load_dictionary(dictionary_symspell_path, term_index, count_index):
-        print("Dictionary file not found")
+    # initial_capacity = len(dict_symspell)
+    # max_edit_distance_dictionary = 6
+    # prefix_length = 7
+    # sym_spell = SymSpell(initial_capacity, max_edit_distance_dictionary,prefix_length)
+    # dictionary_symspell_path = os.path.join(os.path.dirname(__file__),"Dictionary_symspell.txt")
+    # term_index = 0
+    # count_index = 1
+    # if not sym_spell.load_dictionary(dictionary_symspell_path, term_index, count_index):
+    #     print("Dictionary file not found")
 
     j = 1
     name_of_file = []
@@ -130,7 +130,7 @@ def main ():
         #     train_data.append(i)
         j += 1
     # cluster_histo_each_word(number_clusters,[test_all_feature_vector],model,False)
-    # cluster_histo(number_clusters,test_all_feature_vector,model,False)
+    cluster_histo(number_clusters,test_all_feature_vector,model,False)
     print ("trained model")
     predict_class(model,test_all_feature_vector,symbol_to_word_ref,sym_spell,dictionary_words,path_predict_word,name_of_file)
     __,__ = save_class_data(model,test_all_feature_vector,"Test_data_class_label.txt",dictionary_size)
@@ -299,13 +299,20 @@ def cluster_histo(number_clusters,all_feature_vector,model,flag):
     else:
         s = 'test'
     for i in range(len(all_feature_vector)):
-        predicted_label = model.predict(all_feature_vector[i])
+        # if i % 100 == 0:
+        #     print (s)
+        #     for i in histo:
+        #         print (i)
+        #     histo = np.zeros(number_clusters)
+        predicted_label = model.predict(all_feature_vector[int(i)])
         for j in predicted_label:
             histo[j] += 1
-    plt.bar(np.arange(number_clusters),histo, color="green")
-    # plt.show()
-    plt.savefig('histo_all_clus_'+ s +'_'+ str(number_clusters) +'.png')
-    plt.close()
+    # plt.bar(np.arange(number_clusters),histo, color="green")
+    # plt.savefig('histo_all_clus_'+ s +'_'+ str(number_clusters) +'.png')
+    # plt.close()
+    print (s)
+    for i in histo:
+        print (i)
 
 def cluster_histo_each_word(number_clusters,other_words,model,flag):
     c = 0
@@ -320,9 +327,9 @@ def cluster_histo_each_word(number_clusters,other_words,model,flag):
             predicted_label = model.predict(i[j])
             for k in predicted_label:
                 histo[k] += 1
-        plt.bar(np.arange(number_clusters),histo, color="green")
-        plt.savefig('histo_each_word_'+ s +'_'+ str(c) +'_'+ str(number_clusters) +'.png')
-        plt.close()
+        # plt.bar(np.arange(number_clusters),histo, color="green")
+        # plt.savefig('histo_each_word_'+ s +'_'+ str(c) +'_'+ str(number_clusters) +'.png')
+        # plt.close()
 
 def save_dictionary_symspell(file,dict_symspell):
     f = open(file,"w")
