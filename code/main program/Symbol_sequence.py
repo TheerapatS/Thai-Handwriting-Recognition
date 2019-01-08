@@ -56,7 +56,7 @@ def ratio_width(img):
             if img[i][j] < range_color_char:
                 s += 1
         scale.append(s)
-    ratio = max(scale) * 0.4
+    ratio = max(scale) * 0.3
     j = len(scale)-1
     check_1 = False
     check_2 = False
